@@ -36,7 +36,7 @@ for i, line in enumerate( lines[1:] ):
 
 frames = []
 for data_frame in data:
-	img = Image.new( 'L', (1023, 1024), 'white' )
+	img = Image.new( 'L', (1024, 1024), 'white' )
 	drawer = ImageDraw.Draw( img )
 	for data_point in data_frame:
 		if cutoff:
