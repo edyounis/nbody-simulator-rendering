@@ -10,3 +10,5 @@ Example: ./render.py save.txt image.gif 0.01
 This code is ugly and probably inefficient, but it does the job.
 
 Requires: python 3 and pillow
+
+![](img.gif)
