@@ -11,4 +11,4 @@ This code is ugly and probably inefficient, but it does the job.
 
 Requires: python 3 and pillow
 
-![](img.gif)
+![](example.gif)
