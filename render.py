@@ -21,18 +21,18 @@ n       = int(   lines[0].split()[0] )
 boxsize = float( lines[0].split()[1] )
 
 data = []
-# Data is a list a list
+# Data is a list of lists
 # Outer list represents time steps
 # Inner list represents all point (x,y)'s in that time step
-# There is probabily a better way to do this
+# There is probably a better way to do this
 
 for i, line in enumerate( lines[1:] ):
 	if len( data ) <= i // n:
 		data.append( [] )
 	line_split = line.split()
-	center_x = int(1024*(float(line_split[0])/boxsize)) # Ugly code
-	center_y = int(1024*(float(line_split[1])/boxsize)) # is so hot right now
-	data[ i // n ].append( ( center_x, center_y ) ) # https://imgflip.com/s/meme/Mugatu-So-Hot-Right-Now.jpg
+	center_x = int(1024*(float(line_split[0])/boxsize))
+	center_y = int(1024*(float(line_split[1])/boxsize))
+	data[ i // n ].append( ( center_x, center_y ) )
 
 frames = []
 for data_frame in data:
