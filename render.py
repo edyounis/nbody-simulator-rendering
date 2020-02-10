@@ -1,61 +1,55 @@
-#!/bin/python
-from sys import argv
+#!/usr/bin/env python3
+
+from itertools import groupby
+from sys import argv, exit
+
 from PIL import Image
 from PIL import ImageDraw
 
 # Parse Command Line Arguments
 if len( argv ) < 3:
-    print( "Usage is render.py <input file> <output file> [cutoff]" )
+    exit( "Usage is render.py <input file> <output file> [cutoff]" )
 
-input_file  = argv[1]
+input_file = argv[1]
 output_file = argv[2]
 cutoff = None if len( argv ) <= 3 else float( argv[3] )
 
 
 # Helper Functions
-def circle_as_4_tuple ( center, size ):
-    return ( center[0]-size, center[1]-size, center[0]+size, center[1]+size )
+def circle_to_box ( center_x, center_y, size ):
+    return ( center_x - size, center_y - size,
+             center_x + size, center_y + size )
 
 
-lines = None
+# Process the file
 with open( input_file, 'r' ) as f:
-    lines = f.readlines()
+    # Get first line to find the number of particles and the box size.
+    num_parts, box_size = next( f ).split()
+    num_parts, box_size = int( num_parts ), float( box_size )
 
-num_parts = int(   lines[0].split()[0] )
-boxsize   = float( lines[0].split()[1] )
+    # Compute cutoff_radius
+    cutuff_radius = int( 1024 * ( ( cutoff or 0 ) / box_size ) )
 
-data = [ [] ]
-# Data is a list of lists
-# Outer list represents time steps
-# Inner list represents all point (x,y)'s in that time step
-# There is probably a better way to do this
+    # Parse input file
+    frames = []
+    file_sections = groupby( f, lambda x: x and not x.isspace() )
+    frame_sections = ( x[1] for x in file_sections if x[0] )
 
-# Parse input file
-for line in lines[1:]:
+    for frame_section in frame_sections:
+        # Set up a new frame
+        img = Image.new( 'L', (1024, 1024), 'white' )
+        drawer = ImageDraw.Draw( img )
+        frames.append( img )
 
-    if line.isspace():
-        data.append( [] )
-        continue
+        # Paint in the frame
+        for line in frame_section:
+            center_x, center_y = line.split()
+            center_x = int( 1024 * ( float( center_x ) / box_size ) )
+            center_y = int( 1024 * ( float( center_y ) / box_size ) )
 
-    line_split = line.split()
-    center_x = int( 1024 * ( float( line_split[0] ) / boxsize ) )
-    center_y = int( 1024 * ( float( line_split[1] ) / boxsize ) )
-    data[ -1 ].append( ( center_x, center_y ) )
+            drawer.ellipse( circle_to_box( center_x, center_y, cutuff_radius ),
+                            'yellow' )
+            drawer.ellipse( circle_to_box( center_x, center_y, 1 ), 'black' )
 
-# Remove trailing spaces
-while len( data[-1] ) == 0:
-    data = data[:-1]
-
-# Render GIF
-frames = []
-for data_frame in data:
-    img = Image.new( 'L', (1024, 1024), 'white' )
-    drawer = ImageDraw.Draw( img )
-    for data_point in data_frame:
-        if cutoff:
-            drawer.ellipse( circle_as_4_tuple( data_point, int(1024*(cutoff / boxsize)) ), 'yellow' )
-        drawer.ellipse( circle_as_4_tuple( data_point, 1 ), 'black' )
-    frames.append( img )
-
-# Save output
-frames[0].save( output_file, format='GIF', append_images=frames[1:], save_all=True, duration=100, loop=0 )
+    frames[0].save( output_file, format='GIF', append_images=frames[1:],
+                    save_all=True, duration=100, loop=0 )
